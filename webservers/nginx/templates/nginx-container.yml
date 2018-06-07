@@ -1,0 +1,16 @@
+---
+- hosts: all
+  become: true
+  remote_user: root
+  tasks:
+    - name: pull nginx image
+      docker_image:
+        name: nginx
+        state: present
+        
+    - name: Create nginx container
+      docker_container:
+        name: nginx
+        image: nginx
+        state: started
+        published_ports: "80:80"

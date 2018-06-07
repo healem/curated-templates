@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  remote_user: root
+  roles:
+    - '../ansible/ansible-role-nginx'
+  vars:
+    branch: stable

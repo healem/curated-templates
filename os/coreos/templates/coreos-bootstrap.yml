@@ -1,0 +1,10 @@
+---
+- hosts: all
+  gather_facts: false
+  roles:
+    - '../ansible/ansible-coreos-bootstrap'
+  tasks:
+    - name: Install docker-py
+      pip:
+        name: docker-py
+        executable: /home/core/bin/pip
