@@ -4,7 +4,7 @@
   roles:
     - '../ansible/ansible-coreos-bootstrap'
   tasks:
-    - name: Install docker-py
+    - name: Install docker
       pip:
-        name: docker-py
+        name: docker
         executable: /home/core/bin/pip

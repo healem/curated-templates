@@ -87,6 +87,24 @@ resource "aws_security_group" "default" {
   }
 }
 
+resource "aws_internet_gateway" "gw" {
+  vpc_id = "${aws_vpc.nginx.id}"
+}
+
+resource "aws_route_table" "r" {
+  vpc_id = "${aws_vpc.nginx.id}"
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = "${aws_internet_gateway.gw.id}"
+  }
+}
+
+resource "aws_main_route_table_association" "a" {
+  vpc_id         = "${aws_vpc.nginx.id}"
+  route_table_id = "${aws_route_table.r.id}"
+}
+
 resource "null_resource" "cloud-config" {
 
   provisioner "local-exec" {
@@ -100,7 +118,7 @@ resource "null_resource" "cloud-config" {
 
 resource "aws_instance" "nginx" {
 
-  depends_on = ["null_resource.cloud-config"]
+  depends_on = ["null_resource.cloud-config", "aws_internet_gateway.gw", "aws_main_route_table_association.a"]
 
   ami           = "ami-a32d46dc"
   instance_type = "t2.micro"
@@ -116,19 +134,25 @@ resource "null_resource" "ansible-provision" {
   depends_on = ["aws_instance.nginx"]
 
   provisioner "local-exec" {
-    command =  "echo \"[coreos]\nnginx ansible_host=${aws_instance.nginx.public_ip} ansible_port=2222 ansible_ssh_private_key_file=nginx-kp.pem\" > inventory"
+    command =  "echo \"[coreos]\nnginx ansible_host=${aws_instance.nginx.public_ip} ansible_user=core ansible_ssh_private_key_file=nginx-kp.pem\" > inventory"
   }
 
   provisioner "local-exec" {
     command =  "echo \"\n[coreos:vars]\nansible_ssh_user=core\nansible_python_interpreter=/home/core/bin/python\" >> inventory"
   }
   
+  # Wait for the instance to come up
   provisioner "local-exec" {
-    command = "/ansible/bin/ansible-playbook -i inventory \"curated-templates/webservers/nginx/templates/nginx-container.yml\" --list-hosts"
+    command = "sleep 120"
+  }
+  
+  ## Install python
+  provisioner "local-exec" {
+    command = "/ansible/bin/ansible-playbook -vvvv -i inventory \"curated-templates/os/coreos/templates/coreos-bootstrap.yml\""
   }
   
   provisioner "local-exec" {
-    command = "/ansible/bin/ansible-playbook -i inventory \"curated-templates/webservers/nginx/templates/nginx-container.yml\""
+    command = "/ansible/bin/ansible-playbook -vvvv -i inventory \"curated-templates/webservers/nginx/templates/nginx-container.yml\""
   }
 }
 

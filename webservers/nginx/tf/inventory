@@ -1,5 +1,5 @@
 [coreos]
-nginx ansible_host=54.236.31.169 ansible_port=2222 ansible_ssh_private_key_file=nginx-kp.pem
+nginx ansible_host=34.200.234.47 ansible_user=core ansible_ssh_private_key_file=nginx-kp.pem
 
 [coreos:vars]
 ansible_ssh_user=core
