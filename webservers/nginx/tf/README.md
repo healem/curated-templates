@@ -1,0 +1,1 @@
+sudo docker run -it --rm -v $PWD:/data -v /home/healem/projects/curator/curated-templates:/data/curated-templates -v /home/healem/secrets.tfvars:/data/secrets.auto.tfvars -v /home/healem/nginx-kp.pub:/data/nginx-kp.pub -v /home/healem/nginx-kp.pem:/data/nginx-kp.pem --workdir=/data tfa destroy
